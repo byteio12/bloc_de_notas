@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bloc de Notas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Patrick Hand', cursive;
+      display: flex;
+      height: 100vh;
+      background: #d0e8ff;
+    }
+
+    #menu {
+      width: 200px;
+      background: #b3dbff;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 2px solid #89c2ff;
+    }
+
+    #menu button {
+      font-family: inherit;
+      font-size: 18px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #ffffff;
+      border: 1px solid #a2cfff;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #menu button:hover {
+      background: #e0f3ff;
+    }
+
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #toolbar {
+      background: #d8ecff;
+      padding: 10px;
+      border-bottom: 1px solid #aac;
+    }
+
+    #toolbar button {
+      font-family: inherit;
+      font-size: 18px;
+      margin-right: 6px;
+      padding: 6px 12px;
+      border: none;
+      background: #b0d9ff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #toolbar button:hover {
+      background: #8ecaff;
+    }
+
+    /* Estilo para el input título */
+    #tituloNota {
+      margin: 15px 50px 10px 80px;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 22px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 2px solid #89c2ff;
+      width: calc(100% - 130px);
+      outline: none;
+    }
+
+    #editor {
+      flex: 1;
+      padding: 30px 50px 30px 80px;
+      font-family: 'Patrick Hand', cursive;
+      font-size: 20px;
+      line-height: 32px;
+      background:
+        linear-gradient(to right, #ff4d4d 1px, transparent 1px) 60px 0,
+        repeating-linear-gradient(white, white 31px, #cce4ff 32px);
+      background-attachment: local;
+      background-repeat: no-repeat, repeat;
+      background-size: 1px 100%, auto;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      outline: none;
+      border: none;
+      box-shadow: inset 0 0 5px #aaa;
+      border-radius: 10px;
+    }
+
+    #modalOpciones {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 2px solid #89c2ff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      z-index: 999;
+    }
+
+    #modalOpciones button {
+      display: block;
+      margin: 10px 0;
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: 16px;
+      background: #e7f3ff;
+      border: 1px solid #99cfff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #modalOpciones input[type="file"] {
+      margin-top: 10px;
+    }
+
+    #modalOpciones button:hover {
+      background: #cce7ff;
+    }
+
+    #listaNotas {
+      list-style: none;
+      padding: 0;
+      margin-top: 10px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    #listaNotas li {
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #listaNotas li .tituloNotaLista {
+      cursor: pointer;
+      flex-grow: 1;
+      text-align: left;
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      font-family: 'Patrick Hand', cursive;
+      color: #333;
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+    }
+
+    #listaNotas li .tituloNotaLista:hover {
+      background-color: #d0e8ff;
+    }
+
+    #listaNotas li button.borrarBtn {
+      background: #ff6b6b;
+      border: none;
+      color: white;
+      font-size: 18px;
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    #listaNotas li button.borrarBtn:hover {
+      background: #ff3b3b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Menú lateral -->
+  <div id="menu">
+    <button onclick="guardarNota()">📄 Nueva Nota</button>
+    <button onclick="limpiarEditor()">🗑️ Borrar Todo</button>
+    <button onclick="abrirOpciones()">⚙️ Opciones</button>
+
+    <div id="notasGuardadas">
+      <h3>Notas:</h3>
+      <ul id="listaNotas"></ul>
+    </div>
+  </div>
+
+  <!-- Área principal -->
+  <div id="main">
+    <!-- Input para título -->
+    <input id="tituloNota" type="text" placeholder="Escribe el título de la nota aquí..." />
+
+<div id="toolbar">
+  <button onclick="document.execCommand('bold')"><b>B</b></button>
+  <button onclick="document.execCommand('italic')"><i>I</i></button>
+  <button onclick="document.execCommand('underline')"><u>U</u></button>
+  <button onclick="insertCode()">Code</button>
+  <button onclick="document.execCommand('insertUnorderedList')">• Viñetas</button>
+  <button onclick="document.execCommand('insertOrderedList')">1. Numeración</button>
+  <button onclick="document.execCommand('justifyLeft')">⬅ Izquierda</button>
+  <button onclick="document.execCommand('justifyCenter')">↔ Centro</button>
+  <button onclick="document.execCommand('justifyRight')">➡ Derecha</button>
+  <button onclick="document.execCommand('justifyFull')">📰 Justificar</button>
+</div>
+
+    <div id="editor" contenteditable="true"></div>
+  </div>
+
+  <!-- Modal de Opciones -->
+  <div id="modalOpciones">
+    <h3>Opciones</h3>
+    <button onclick="exportarNotas()">💾 Exportar notas (.txt)</button>
+    <input type="file" accept=".txt" multiple onchange="importarNotas(event)" />
+    <button onclick="cerrarOpciones()">❌ Cerrar</button>
+  </div>
+
+  <!-- Script -->
+  <script>
+    const editor = document.getElementById("editor");
+    const listaNotas = document.getElementById("listaNotas");
+    const tituloInput = document.getElementById("tituloNota");
+
+    // Guardar contenido y título en localStorage en tiempo real
+    editor.addEventListener("input", () => {
+      localStorage.setItem("nota_actual_contenido", editor.innerHTML);
+    });
+    tituloInput.addEventListener("input", () => {
+      localStorage.setItem("nota_actual_titulo", tituloInput.value);
+    });
+
+    // Función para limpiar editor y título
+    function limpiarEditor() {
+      editor.innerHTML = '';
+      tituloInput.value = '';
+      localStorage.removeItem('nota_actual_contenido');
+      localStorage.removeItem('nota_actual_titulo');
+    }
+
+    // Guardar nota con título y contenido
+    function guardarNota() {
+      const contenido = editor.innerHTML.trim();
+      const titulo = tituloInput.value.trim();
+
+      if (!titulo) {
+        alert("Por favor escribe un título para la nota.");
+        return;
+      }
+      if (!contenido) {
+        alert("La nota está vacía, escribe algo antes de guardar.");
+        return;
+      }
+
+      const id = 'nota_' + Date.now();
+      // Guardamos objeto JSON con título y contenido
+      const nota = {
+        titulo: titulo,
+        contenido: contenido
+      };
+
+      localStorage.setItem(id, JSON.stringify(nota));
+      agregarNotaALista(id, nota);
+      limpiarEditor();
+    }
+
+    // Agrega nota a la lista con título clickeable
+    function agregarNotaALista(id, nota) {
+      // Ver si ya existe para no duplicar (por ej. al recargar)
+      if (document.getElementById(id)) return;
+
+      const li = document.createElement("li");
+      li.id = id;
+
+      // Título como botón estilizado
+      const tituloBtn = document.createElement("button");
+      tituloBtn.textContent = nota.titulo;
+      tituloBtn.className = "tituloNotaLista";
+      tituloBtn.onclick = () => {
+        editor.innerHTML = nota.contenido;
+        tituloInput.value = nota.titulo;
+        // Guardar actual en localStorage para mantener estado
+        localStorage.setItem("nota_actual_contenido", nota.contenido);
+        localStorage.setItem("nota_actual_titulo", nota.titulo);
+      };
+
+      const borrarBtn = document.createElement("button");
+      borrarBtn.textContent = "🗑️";
+      borrarBtn.className = "borrarBtn";
+      borrarBtn.onclick = () => {
+        if (confirm(`¿Quieres borrar la nota "${nota.titulo}"?`)) {
+          localStorage.removeItem(id);
+          listaNotas.removeChild(li);
+          // Si la nota borrada es la que está en editor, limpiar editor
+          if (tituloInput.value === nota.titulo && editor.innerHTML === nota.contenido) {
+            limpiarEditor();
+          }
+        }
+      };
+
+      li.appendChild(tituloBtn);
+      li.appendChild(borrarBtn);
+      listaNotas.appendChild(li);
+    }
+
+    // Insertar código con <code> en el editor
+    function insertCode() {
+      const selection = window.getSelection();
+      const selectedText = selection.toString();
+      if (selectedText.length === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const codeNode = document.createElement("code");
+      codeNode.textContent = selectedText;
+      range.deleteContents();
+      range.insertNode(codeNode);
+    }
+
+    // Cargar notas guardadas al iniciar y el contenido actual
+    window.addEventListener("DOMContentLoaded", () => {
+      const contenidoGuardado = localStorage.getItem("nota_actual_contenido");
+      const tituloGuardado = localStorage.getItem("nota_actual_titulo");
+      if (contenidoGuardado) editor.innerHTML = contenidoGuardado;
+      if (tituloGuardado) tituloInput.value = tituloGuardado;
+
+      // Cargar todas las notas guardadas excepto las actuales en curso
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("nota_")) {
+          const nota = JSON.parse(localStorage.getItem(key));
+          agregarNotaALista(key, nota);
+        }
+      }
+    });
+
+    // Modal opciones
+    const modal = document.getElementById("modalOpciones");
+    function abrirOpciones() {
+      modal.style.display = "block";
+    }
+    function cerrarOpciones() {
+      modal.style.display = "none";
+    }
+
+    // Exportar notas a archivo txt
+    function exportarNotas() {
+      let contenido = "";
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("nota_")) {
+          const nota = JSON.parse(localStorage.getItem(key));
+          contenido += `Título: ${nota.titulo}\nContenido:\n${nota.contenido}\n\n---\n\n`;
+        }
+      }
+      const blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "notas_exportadas.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Importar notas desde archivos txt
+    function importarNotas(event) {
+      const archivos = event.target.files;
+      if (!archivos.length) return;
+
+      Array.from(archivos).forEach((archivo) => {
+        const lector = new FileReader();
+        lector.onload = (e) => {
+          // Suponemos que cada archivo es una nota entera
+          const texto = e.target.result.trim();
+          // Como no hay estructura específica, guardamos todo en contenido y pedimos título por prompt
+          let titulo = prompt("Escribe el título para la nota importada:", archivo.name);
+          if (!titulo) titulo = "Nota importada " + Date.now();
+
+          const id = "nota_" + Date.now() + Math.floor(Math.random()*1000);
+          const nota = {
+            titulo: titulo,
+            contenido: texto
+          };
+          localStorage.setItem(id, JSON.stringify(nota));
+          agregarNotaALista(id, nota);
+        };
+        lector.readAsText(archivo);
+      });
+
+      event.target.value = "";
+    }
+  </script>
+
+</body>
+</html>
